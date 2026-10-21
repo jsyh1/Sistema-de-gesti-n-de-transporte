@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="SistemaTransporte.Api/SistemaTransporte.Api.csproj" />
+  <Project Path="SistemaTransporte.Tests/SistemaTransporte.Tests.csproj" />
+</Solution>
