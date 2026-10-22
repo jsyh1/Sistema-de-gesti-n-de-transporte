@@ -1,4 +1,6 @@
 
+using SistemaTransporte.Api.Models.Enums;
+
 namespace SistemaTransporte.Api.Models;
 
 /// <summary>
@@ -9,5 +11,5 @@ public class ProgramacionActivaBusDia
 {
     public int BusId { get; set; }
 
-    public byte DiaSemana { get; set; }
+    public DiaSemana DiaSemana { get; set; }
 }

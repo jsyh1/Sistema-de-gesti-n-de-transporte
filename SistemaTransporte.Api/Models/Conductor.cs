@@ -1,4 +1,6 @@
 
+using SistemaTransporte.Api.Models.Enums;
+
 namespace SistemaTransporte.Api.Models;
 
 /// <summary>
@@ -12,7 +14,7 @@ public class Conductor
 
     public string NumeroLicencia { get; set; } = string.Empty;
 
-    public int Estado { get; set; } = 0;
+    public EstadoConductor Estado { get; set; } = EstadoConductor.Disponible;
 
     public int? UsuarioId { get; set; }
 }
