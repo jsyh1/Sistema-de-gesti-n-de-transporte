@@ -2,7 +2,7 @@
 
 Sistema propuesto para administrar buses, conductores y sus horarios semanales. La solución contempla una interfaz web para los usuarios, una API REST para las operaciones y una base de datos para guardar la información.
 
-> **Estado del repositorio:** la copia consultada contiene este README, pero no incluye todavía el código del frontend o backend, archivos de proyecto ni scripts de base de datos. Por eso, los comandos concretos para instalar y ejecutar la aplicación aún no se pueden verificar. La wiki describe requisitos y un diseño propuesto; no confirma por sí sola que las funcionalidades ya estén implementadas.
+> **Estado del repositorio:** esta copia incluye una API ASP.NET Core y un cliente React. La wiki describe requisitos y un diseño propuesto; no confirma por sí sola que todas las funcionalidades estén implementadas.
 
 ## Objetivo y alcance
 
@@ -74,7 +74,7 @@ La guía de la wiki indica que se requiere:
 - Un motor de base de datos relacional y una herramienta para administrarlo.
 - Un editor de código.
 
-Antes de instalar dependencias o configurar la conexión, confirma las versiones, el motor de base de datos y las rutas de los proyectos en el código fuente. Esos datos aún no se pueden verificar en este repositorio.
+La API está dirigida a .NET 10 y usa MySQL para la persistencia. Configura la cadena de conexión con los datos de tu servidor antes de ejecutar las operaciones que acceden a la base de datos.
 
 ## Instalación y ejecución
 
@@ -85,7 +85,16 @@ git clone https://github.com/jsyh1/Sistema-de-gesti-n-de-transporte.git
 cd Sistema-de-gesti-n-de-transporte
 ```
 
-La wiki describe pasos generales para configurar el backend, el frontend y la base de datos, pero esta copia del repositorio no contiene los proyectos ni sus archivos de configuración. Por tanto, todavía no es posible indicar comandos fiables de restauración, migración o inicio. Cuando se agregue el código, esta sección deberá completarse con los comandos reales y las variables de entorno requeridas.
+Configura la conexión MySQL según las instrucciones siguientes antes de iniciar el backend. Los comandos para el cliente dependen de los scripts definidos en `client/package.json`.
+
+### Conexión MySQL del backend
+
+La API lee la cadena de conexión desde `ConnectionStrings:DefaultConnection`. En PowerShell, configúrala antes de iniciar la API (sustituye usuario y contraseña por los de tu servidor):
+
+```powershell
+$env:ConnectionStrings__DefaultConnection = "Server=localhost;Port=3307;Database=ProgramacionBuses;User ID=TU_USUARIO;Password=TU_CONTRASENA;"
+dotnet run --project .\SistemaTransporte.Api
+```
 
 ## Pruebas previstas
 

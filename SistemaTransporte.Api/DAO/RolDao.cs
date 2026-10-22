@@ -1,5 +1,5 @@
 
-using Microsoft.Data.SqlClient;
+using MySqlConnector;
 using SistemaTransporte.Api.Models;
 using SistemaTransporte.Api.Data;
 
@@ -24,7 +24,7 @@ public class RolDao : IRolDao
     {
         var roles = new List<Rol>();
 
-        using SqlConnection conexion = _conexionDB.ObtenerConexion();
+        using MySqlConnection conexion = _conexionDB.ObtenerConexion();
 
         const string sql = """
             SELECT Id, Nombre
@@ -32,7 +32,7 @@ public class RolDao : IRolDao
             ORDER BY Id;
             """;
 
-        using var comando = new SqlCommand(sql, conexion);
+        using var comando = new MySqlCommand(sql, conexion);
 
         await conexion.OpenAsync();
 
@@ -55,7 +55,7 @@ public class RolDao : IRolDao
     /// </summary>
     public async Task<Rol?> GetByIdAsync(int id)
     {
-        using SqlConnection conexion = _conexionDB.ObtenerConexion();
+        using MySqlConnection conexion = _conexionDB.ObtenerConexion();
 
         const string sql = """
             SELECT Id, Nombre
@@ -63,7 +63,7 @@ public class RolDao : IRolDao
             WHERE Id = @Id;
             """;
 
-        using var comando = new SqlCommand(sql, conexion);
+        using var comando = new MySqlCommand(sql, conexion);
         comando.Parameters.AddWithValue("@Id", id);
 
         await conexion.OpenAsync();
@@ -87,20 +87,22 @@ public class RolDao : IRolDao
     /// </summary>
     public async Task<Rol> CreateAsync(Rol entity)
     {
-        using SqlConnection conexion = _conexionDB.ObtenerConexion();
+        using MySqlConnection conexion = _conexionDB.ObtenerConexion();
 
         const string sql = """
             INSERT INTO Roles (Nombre)
-            OUTPUT INSERTED.Id
             VALUES (@Nombre);
             """;
 
-        using var comando = new SqlCommand(sql, conexion);
+        using var comando = new MySqlCommand(sql, conexion);
         comando.Parameters.AddWithValue("@Nombre", entity.Nombre);
 
         await conexion.OpenAsync();
 
-        entity.Id = Convert.ToInt32(await comando.ExecuteScalarAsync());
+        await comando.ExecuteNonQueryAsync();
+
+        using var comandoId = new MySqlCommand("SELECT LAST_INSERT_ID();", conexion);
+        entity.Id = Convert.ToInt32(await comandoId.ExecuteScalarAsync());
 
         return entity;
     }
@@ -110,7 +112,7 @@ public class RolDao : IRolDao
     /// </summary>
     public async Task<Rol?> UpdateAsync(int id, Rol entity)
     {
-        using SqlConnection conexion = _conexionDB.ObtenerConexion();
+        using MySqlConnection conexion = _conexionDB.ObtenerConexion();
 
         const string sql = """
             UPDATE Roles
@@ -118,7 +120,7 @@ public class RolDao : IRolDao
             WHERE Id = @Id;
             """;
 
-        using var comando = new SqlCommand(sql, conexion);
+        using var comando = new MySqlCommand(sql, conexion);
         comando.Parameters.AddWithValue("@Id", id);
         comando.Parameters.AddWithValue("@Nombre", entity.Nombre);
 
@@ -141,14 +143,14 @@ public class RolDao : IRolDao
     /// </summary>
     public async Task<bool> DeleteAsync(int id)
     {
-        using SqlConnection conexion = _conexionDB.ObtenerConexion();
+        using MySqlConnection conexion = _conexionDB.ObtenerConexion();
 
         const string sql = """
             DELETE FROM Roles
             WHERE Id = @Id;
             """;
 
-        using var comando = new SqlCommand(sql, conexion);
+        using var comando = new MySqlCommand(sql, conexion);
         comando.Parameters.AddWithValue("@Id", id);
 
         await conexion.OpenAsync();
