@@ -50,7 +50,7 @@ public class ProgramacionActivaBusDiaDao : IProgramacionActivaBusDiaDao
             "INSERT INTO ProgramacionesActivasBusDia (BusId, DiaSemana) VALUES (@BusId, @DiaSemana);",
             conexion);
         comando.Parameters.AddWithValue("@BusId", entity.BusId);
-        comando.Parameters.AddWithValue("@DiaSemana", (byte)entity.DiaSemana);
+        comando.Parameters.AddWithValue("@DiaSemana", entity.DiaSemana.ToString());
         await conexion.OpenAsync();
         await comando.ExecuteNonQueryAsync();
         return entity;
@@ -84,7 +84,7 @@ public class ProgramacionActivaBusDiaDao : IProgramacionActivaBusDiaDao
             """,
             conexion);
         comando.Parameters.AddWithValue("@NuevoBusId", entity.BusId);
-        comando.Parameters.AddWithValue("@NuevoDiaSemana", (byte)entity.DiaSemana);
+        comando.Parameters.AddWithValue("@NuevoDiaSemana", entity.DiaSemana.ToString());
         comando.Parameters.AddWithValue("@BusId", busId);
         comando.Parameters.AddWithValue("@DiaSemana", diaSemana);
         await comando.ExecuteNonQueryAsync();
@@ -100,7 +100,7 @@ public class ProgramacionActivaBusDiaDao : IProgramacionActivaBusDiaDao
             "DELETE FROM ProgramacionesActivasBusDia WHERE BusId = @BusId AND DiaSemana = @DiaSemana;",
             conexion);
         comando.Parameters.AddWithValue("@BusId", busId);
-        comando.Parameters.AddWithValue("@DiaSemana", (byte)diaSemana);
+        comando.Parameters.AddWithValue("@DiaSemana", diaSemana.ToString());
         await conexion.OpenAsync();
         return await comando.ExecuteNonQueryAsync() > 0;
     }
@@ -116,22 +116,23 @@ public class ProgramacionActivaBusDiaDao : IProgramacionActivaBusDiaDao
             """,
             conexion);
         comando.Parameters.AddWithValue("@BusId", busId);
-        comando.Parameters.AddWithValue("@DiaSemana", (byte)diaSemana);
+        comando.Parameters.AddWithValue("@DiaSemana", diaSemana.ToString());
         return comando;
     }
 
     private static ProgramacionActivaBusDia Leer(MySqlDataReader reader) => new()
     {
         BusId = reader.GetInt32(0),
-        DiaSemana = LeerDiaSemana(reader.GetByte(1))
+        DiaSemana = LeerDiaSemana(reader.GetString(1))
     };
 
-    private static DiaSemana LeerDiaSemana(byte valor)
+    private static DiaSemana LeerDiaSemana(string valor)
     {
-        var dia = (DiaSemana)valor;
-        return Enum.IsDefined(dia)
+        return Enum.TryParse<DiaSemana>(valor, ignoreCase: false, out var dia)
+            && Enum.IsDefined(dia)
+            && string.Equals(valor, dia.ToString(), StringComparison.Ordinal)
             ? dia
             : throw new InvalidDataException(
-                $"DiaSemana no reconocido en la base de datos: {valor}.");
+                $"DiaSemana no reconocido en la base de datos: '{valor}'.");
     }
 }

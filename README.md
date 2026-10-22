@@ -66,7 +66,7 @@ La URL local de la API depende de la configuración del backend; la wiki usa com
 
 ### Enums del modelo
 
-Los estados y los días se reciben y devuelven como valores numéricos en JSON, y conservan estos valores enteros en MySQL:
+La API recibe y devuelve los enums como valores numéricos JSON. En MySQL, los enums se guardan como texto legible: `Buses.Estado`, `Conductores.Estado` y `DiaSemana` en `Programaciones` y `ProgramacionesActivasBusDia`:
 
 | Enum | Valor | Nombre |
 | --- | ---: | --- |
@@ -79,6 +79,8 @@ Los estados y los días se reciben y devuelven como valores numéricos en JSON, 
 | `EstadoConductor` | 2 | Descanso |
 | `EstadoConductor` | 3 | Inactivo |
 | `DiaSemana` | 1–7 | Lunes–Domingo, en ese orden |
+
+Para crear una base nueva usa [`database/schema.sql`](./database/schema.sql). Si la base existente aún almacena estados o días como números, haz una copia de seguridad, revisa los resultados de las consultas preliminares y ejecuta una sola vez las migraciones [`database/migrations/20261022_estados_a_texto.sql`](./database/migrations/20261022_estados_a_texto.sql) y [`database/migrations/20261022_dias_semana_a_texto.sql`](./database/migrations/20261022_dias_semana_a_texto.sql). Detén la API durante la migración y vuelve a iniciarla cuando termine; las migraciones conservan las filas y convierten los códigos en nombres de enum.
 
 ## Requisitos previos
 
