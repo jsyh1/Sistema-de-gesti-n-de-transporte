@@ -98,7 +98,7 @@ public class RolesControllerTests
     }
 
     [Fact]
-    public async Task PutRol_ActualizaRolYDevuelveNoContent()
+    public async Task PutRol_ActualizaRolYDevuelveOk()
     {
         using var host = await CrearAplicacionAsync(new FakeRolDao(
             [new Rol { Id = 1, Nombre = "Conductor" }]));
@@ -108,7 +108,7 @@ public class RolesControllerTests
             "/api/Roles/1",
             new Rol { Nombre = "Supervisor" });
 
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         using var consulta = await client.GetAsync("/api/Roles/1");
         var rolActualizado = await consulta.Content.ReadFromJsonAsync<Rol>();

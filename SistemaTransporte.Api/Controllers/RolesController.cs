@@ -1,6 +1,6 @@
 
 using Microsoft.AspNetCore.Mvc;
-using SistemaTransporte.Api.Models;
+using SistemaTransporte.Api.DTOs;
 using SistemaTransporte.Api.Services;
 
 namespace SistemaTransporte.Api.Controllers;
@@ -36,29 +36,43 @@ public class RolesController : ControllerBase
     [HttpGet("{id:int}")]
     public async Task<IActionResult> ObtenerPorId(int id)
     {
-        var rol = await _rolService.ObtenerPorIdAsync(id);
-
-        if (rol is null)
+        try
         {
-            return NotFound(new { mensaje = "El rol no existe." });
-        }
+            var rol = await _rolService.ObtenerPorIdAsync(id);
 
-        return Ok(rol);
+            if (rol is null)
+            {
+                return NotFound(new { mensaje = "El rol no existe." });
+            }
+
+            return Ok(rol);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { mensaje = ex.Message });
+        }
     }
 
     /// <summary>
     /// Registra un nuevo rol.
     /// </summary>
     [HttpPost]
-    public async Task<IActionResult> Crear([FromBody] Rol rol)
+    public async Task<IActionResult> Crear([FromBody] CrearRolDto dto)
     {
-        var creado = await _rolService.CrearAsync(rol);
+        try
+        {
+            var creado = await _rolService.CrearAsync(dto);
 
-        return CreatedAtAction(
-            nameof(ObtenerPorId),
-            new { id = creado.Id },
-            creado
-        );
+            return CreatedAtAction(
+                nameof(ObtenerPorId),
+                new { id = creado.Id },
+                creado
+            );
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { mensaje = ex.Message });
+        }
     }
 
 
@@ -66,16 +80,23 @@ public class RolesController : ControllerBase
     /// Actualiza un rol existente.
     /// </summary>
     [HttpPut("{id:int}")]
-    public async Task<IActionResult> Actualizar(int id, [FromBody] Rol rol)
+    public async Task<IActionResult> Actualizar(int id, [FromBody] ActualizarRolDto dto)
     {
-        var actualizado = await _rolService.ActualizarAsync(id, rol);
-
-        if (actualizado is null)
+        try
         {
-            return NotFound(new { mensaje = "El rol no existe." });
-        }
+            var actualizado = await _rolService.ActualizarAsync(id, dto);
 
-        return NoContent();
+            if (actualizado is null)
+            {
+                return NotFound(new { mensaje = "El rol no existe." });
+            }
+
+            return Ok(actualizado);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { mensaje = ex.Message });
+        }
     }
 
 
@@ -85,13 +106,20 @@ public class RolesController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Eliminar(int id)
     {
-        var eliminado = await _rolService.EliminarAsync(id);
-
-        if (!eliminado)
+        try
         {
-            return NotFound(new { mensaje = "El rol no existe." });
-        }
+            var eliminado = await _rolService.EliminarAsync(id);
 
-        return NoContent();
+            if (!eliminado)
+            {
+                return NotFound(new { mensaje = "El rol no existe." });
+            }
+
+            return NoContent();
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { mensaje = ex.Message });
+        }
     }
 }

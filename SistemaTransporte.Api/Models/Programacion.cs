@@ -1,4 +1,6 @@
 
+using SistemaTransporte.Api.Models.Enums;
+
 namespace SistemaTransporte.Api.Models;
 
 /// <summary>
@@ -12,7 +14,7 @@ public class Programacion
 
     public int ConductorId { get; set; }
 
-    public byte DiaSemana { get; set; }
+    public DiaSemana DiaSemana { get; set; }
 
     public TimeSpan HoraEntrada { get; set; }
 

@@ -1,5 +1,6 @@
 
 using SistemaTransporte.Api.DAO;
+using SistemaTransporte.Api.DTOs;
 using SistemaTransporte.Api.Models;
 
 namespace SistemaTransporte.Api.Services;
@@ -45,33 +46,34 @@ public class RolService
     /// <summary>
     /// Registra un nuevo rol.
     /// </summary>
-    public async Task<Rol> CrearAsync(Rol rol)
+    public async Task<Rol> CrearAsync(CrearRolDto dto)
     {
-        ArgumentNullException.ThrowIfNull(rol);
+        ArgumentNullException.ThrowIfNull(dto);
 
-        if (string.IsNullOrWhiteSpace(rol.Nombre))
+        if (string.IsNullOrWhiteSpace(dto.Nombre))
         {
             throw new ArgumentException(
                 "El nombre del rol es obligatorio.");
         }
 
-        rol.Nombre = rol.Nombre.Trim();
+        var nombre = dto.Nombre.Trim();
 
-        if (rol.Nombre.Length > 30)
+        if (nombre.Length > 30)
         {
             throw new ArgumentException(
                 "El nombre del rol no puede superar los 30 caracteres.");
         }
 
+        var rol = new Rol { Nombre = nombre };
         return await _rolDao.CreateAsync(rol);
     }
 
     /// <summary>
     /// Actualiza un rol existente.
     /// </summary>
-    public async Task<Rol?> ActualizarAsync(int id, Rol rol)
+    public async Task<Rol?> ActualizarAsync(int id, ActualizarRolDto dto)
     {
-        ArgumentNullException.ThrowIfNull(rol);
+        ArgumentNullException.ThrowIfNull(dto);
 
         if (id <= 0)
         {
@@ -80,22 +82,21 @@ public class RolService
                 nameof(id));
         }
 
-        if (string.IsNullOrWhiteSpace(rol.Nombre))
+        if (string.IsNullOrWhiteSpace(dto.Nombre))
         {
             throw new ArgumentException(
                 "El nombre del rol es obligatorio.");
         }
 
-        rol.Nombre = rol.Nombre.Trim();
+        var nombre = dto.Nombre.Trim();
 
-        if (rol.Nombre.Length > 30)
+        if (nombre.Length > 30)
         {
             throw new ArgumentException(
                 "El nombre del rol no puede superar los 30 caracteres.");
         }
 
-        rol.Id = id;
-
+        var rol = new Rol { Id = id, Nombre = nombre };
         return await _rolDao.UpdateAsync(id, rol);
     }
 

@@ -64,6 +64,22 @@ La wiki documenta como contrato propuesto estos endpoints de autenticación:
 
 La URL local de la API depende de la configuración del backend; la wiki usa como referencia `https://localhost:{puerto}/api`. Los endpoints de buses, conductores y programaciones, así como los modelos de solicitud y respuesta, deben confirmarse con la implementación final.
 
+### Enums del modelo
+
+Los estados y los días se reciben y devuelven como valores numéricos en JSON, y conservan estos valores enteros en MySQL:
+
+| Enum | Valor | Nombre |
+| --- | ---: | --- |
+| `EstadoBus` | 0 | Disponible |
+| `EstadoBus` | 1 | Asignado |
+| `EstadoBus` | 2 | EnMantenimiento |
+| `EstadoBus` | 3 | FueraDeServicio |
+| `EstadoConductor` | 0 | Disponible |
+| `EstadoConductor` | 1 | Asignado |
+| `EstadoConductor` | 2 | Descanso |
+| `EstadoConductor` | 3 | Inactivo |
+| `DiaSemana` | 1–7 | Lunes–Domingo, en ese orden |
+
 ## Requisitos previos
 
 La guía de la wiki indica que se requiere:
@@ -95,6 +111,13 @@ La API lee la cadena de conexión desde `ConnectionStrings:DefaultConnection`. E
 $env:ConnectionStrings__DefaultConnection = "Server=localhost;Port=3307;Database=ProgramacionBuses;User ID=TU_USUARIO;Password=TU_CONTRASENA;"
 dotnet run --project .\SistemaTransporte.Api
 ```
+
+En entorno de desarrollo, Swagger está disponible en `http://localhost:5267/swagger`.
+La API ofrece operaciones CRUD para los modelos `Roles`, `Usuarios`, `Buses`,
+`Conductores`, `Programaciones` y `ProgramacionesActivasBusDia`, bajo las rutas
+`/api/Roles`, `/api/Usuarios`, `/api/Buses`, `/api/Conductores`,
+`/api/Programaciones` y `/api/ProgramacionesActivasBusDia`. El modelo de
+programación activa usa `BusId` y `DiaSemana` como clave compuesta.
 
 ## Pruebas previstas
 

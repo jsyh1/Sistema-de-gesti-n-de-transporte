@@ -1,4 +1,6 @@
 
+using SistemaTransporte.Api.Models.Enums;
+
 namespace SistemaTransporte.Api.Models;
 
 /// <summary>
@@ -14,5 +16,5 @@ public class Bus
 
     public int Capacidad { get; set; }
 
-    public int Estado { get; set; } = 0;
+    public EstadoBus Estado { get; set; } = EstadoBus.Disponible;
 }
