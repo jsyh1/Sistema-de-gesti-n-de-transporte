@@ -116,7 +116,7 @@ public class ProgramacionDao : IProgramacionDao
         Id = reader.GetInt32(0),
         BusId = reader.GetInt32(1),
         ConductorId = reader.GetInt32(2),
-        DiaSemana = LeerDiaSemana(reader.GetByte(3)),
+        DiaSemana = LeerDiaSemana(reader.GetString(3)),
         HoraEntrada = reader.GetTimeSpan(4),
         HoraSalida = reader.GetTimeSpan(5),
         Activa = reader.GetBoolean(6),
@@ -128,7 +128,7 @@ public class ProgramacionDao : IProgramacionDao
     {
         comando.Parameters.AddWithValue("@BusId", entity.BusId);
         comando.Parameters.AddWithValue("@ConductorId", entity.ConductorId);
-        comando.Parameters.AddWithValue("@DiaSemana", (byte)entity.DiaSemana);
+        comando.Parameters.AddWithValue("@DiaSemana", entity.DiaSemana.ToString());
         comando.Parameters.AddWithValue("@HoraEntrada", entity.HoraEntrada);
         comando.Parameters.AddWithValue("@HoraSalida", entity.HoraSalida);
         comando.Parameters.AddWithValue("@Activa", entity.Activa);
@@ -138,12 +138,13 @@ public class ProgramacionDao : IProgramacionDao
         }
     }
 
-    private static DiaSemana LeerDiaSemana(byte valor)
+    private static DiaSemana LeerDiaSemana(string valor)
     {
-        var dia = (DiaSemana)valor;
-        return Enum.IsDefined(dia)
+        return Enum.TryParse<DiaSemana>(valor, ignoreCase: false, out var dia)
+            && Enum.IsDefined(dia)
+            && string.Equals(valor, dia.ToString(), StringComparison.Ordinal)
             ? dia
             : throw new InvalidDataException(
-                $"DiaSemana no reconocido en la base de datos: {valor}.");
+                $"DiaSemana no reconocido en la base de datos: '{valor}'.");
     }
 }

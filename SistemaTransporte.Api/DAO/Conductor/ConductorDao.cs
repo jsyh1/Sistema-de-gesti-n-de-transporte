@@ -96,7 +96,7 @@ public class ConductorDao : IConductorDao
         Id = reader.GetInt32(0),
         Nombre = reader.GetString(1),
         NumeroLicencia = reader.GetString(2),
-        Estado = LeerEstadoConductor(reader.GetInt32(3)),
+        Estado = LeerEstadoConductor(reader.GetString(3)),
         UsuarioId = reader.IsDBNull(4) ? null : reader.GetInt32(4)
     };
 
@@ -104,7 +104,7 @@ public class ConductorDao : IConductorDao
     {
         comando.Parameters.AddWithValue("@Nombre", entity.Nombre);
         comando.Parameters.AddWithValue("@NumeroLicencia", entity.NumeroLicencia);
-        comando.Parameters.AddWithValue("@Estado", (int)entity.Estado);
+        comando.Parameters.AddWithValue("@Estado", entity.Estado.ToString());
         comando.Parameters.AddWithValue("@UsuarioId", entity.UsuarioId is null
             ? DBNull.Value
             : entity.UsuarioId.Value);
@@ -121,12 +121,13 @@ public class ConductorDao : IConductorDao
         return await reader.ReadAsync() ? LeerConductor(reader) : null;
     }
 
-    private static EstadoConductor LeerEstadoConductor(int valor)
+    private static EstadoConductor LeerEstadoConductor(string valor)
     {
-        var estado = (EstadoConductor)valor;
-        return Enum.IsDefined(estado)
+        return Enum.TryParse<EstadoConductor>(valor, ignoreCase: true, out var estado)
+            && Enum.IsDefined(estado)
+            && string.Equals(valor, estado.ToString(), StringComparison.OrdinalIgnoreCase)
             ? estado
             : throw new InvalidDataException(
-                $"EstadoConductor no reconocido en la base de datos: {valor}.");
+                $"EstadoConductor no reconocido en la base de datos: '{valor}'.");
     }
 }

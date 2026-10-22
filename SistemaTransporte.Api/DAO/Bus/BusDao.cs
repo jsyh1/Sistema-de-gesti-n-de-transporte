@@ -98,7 +98,7 @@ public class BusDao : IBusDao
         NumeroIdentificacion = reader.GetString(1),
         Modelo = reader.GetString(2),
         Capacidad = reader.GetInt32(3),
-        Estado = LeerEstadoBus(reader.GetInt32(4))
+        Estado = LeerEstadoBus(reader.GetString(4))
     };
 
     private static void AgregarDatos(MySqlCommand comando, Bus entity)
@@ -106,16 +106,17 @@ public class BusDao : IBusDao
         comando.Parameters.AddWithValue("@NumeroIdentificacion", entity.NumeroIdentificacion);
         comando.Parameters.AddWithValue("@Modelo", entity.Modelo);
         comando.Parameters.AddWithValue("@Capacidad", entity.Capacidad);
-        comando.Parameters.AddWithValue("@Estado", (int)entity.Estado);
+        comando.Parameters.AddWithValue("@Estado", entity.Estado.ToString());
     }
 
-    private static EstadoBus LeerEstadoBus(int valor)
+    private static EstadoBus LeerEstadoBus(string valor)
     {
-        var estado = (EstadoBus)valor;
-        return Enum.IsDefined(estado)
+        return Enum.TryParse<EstadoBus>(valor, ignoreCase: true, out var estado)
+            && Enum.IsDefined(estado)
+            && string.Equals(valor, estado.ToString(), StringComparison.OrdinalIgnoreCase)
             ? estado
             : throw new InvalidDataException(
-                $"EstadoBus no reconocido en la base de datos: {valor}.");
+                $"EstadoBus no reconocido en la base de datos: '{valor}'.");
     }
 
     private static async Task<Bus?> GetByIdAsyncWithConnectionAsync(
