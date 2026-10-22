@@ -64,9 +64,13 @@
               "target": "Package",
               "version": "[10.0.0, )"
             },
-            "Microsoft.EntityFrameworkCore.SqlServer": {
+            "MySqlConnector": {
               "target": "Package",
-              "version": "[10.0.0, )"
+              "version": "[2.6.2, )"
+            },
+            "Swashbuckle.AspNetCore.SwaggerUI": {
+              "target": "Package",
+              "version": "[10.3.1, )"
             },
             "System.Security.Cryptography.Pkcs": {
               "target": "Package",
@@ -556,6 +560,10 @@
           "framework": "net10.0",
           "targetAlias": "net10.0",
           "dependencies": {
+            "Microsoft.AspNetCore.TestHost": {
+              "target": "Package",
+              "version": "[10.0.13, )"
+            },
             "Microsoft.NET.Test.Sdk": {
               "target": "Package",
               "version": "[17.14.1, )"

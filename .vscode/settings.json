@@ -1,0 +1,8 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^dotnet test \\.\\\\SistemaTransporte\\.Tests\\\\SistemaTransporte\\.Tests\\.csproj --no-restore --filter FullyQualifiedName~RolesControllerTests$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}

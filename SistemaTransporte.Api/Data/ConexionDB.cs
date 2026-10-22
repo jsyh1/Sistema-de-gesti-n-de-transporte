@@ -1,38 +1,39 @@
 
-using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
+using MySqlConnector;
 
 namespace SistemaTransporte.Api.Data;
 
 /// <summary>
-/// Administra la configuración de conexión a SQL Server
-/// mediante el patrón Singleton.
+/// Administra la configuración de conexión a MySQL.
 /// </summary>
 public sealed class ConexionDB
 {
-    private static readonly Lazy<ConexionDB> _instancia =
-        new(() => new ConexionDB());
-
     private readonly string _cadenaConexion;
 
     /// <summary>
-    /// Obtiene la instancia única de ConexionDB.
+    /// Obtiene la cadena de conexión configurada para la aplicación.
     /// </summary>
-    public static ConexionDB Instancia => _instancia.Value;
-
-    /// <summary>
-    /// Constructor privado para impedir instancias externas.
-    /// </summary>
-    private ConexionDB()
+    public ConexionDB(IConfiguration configuration)
     {
-        _cadenaConexion =
-            @"Server=(localdb)\MSSQLLocalDB;Database=ProgramacionBuses;Integrated Security=True;TrustServerCertificate=True;";
+        ArgumentNullException.ThrowIfNull(configuration);
+
+        _cadenaConexion = configuration.GetConnectionString("DefaultConnection")
+            ?? throw new InvalidOperationException(
+                "La cadena de conexión 'DefaultConnection' no está configurada.");
+
+        if (string.IsNullOrWhiteSpace(_cadenaConexion))
+        {
+            throw new InvalidOperationException(
+                "La cadena de conexión 'DefaultConnection' no puede estar vacía.");
+        }
     }
 
     /// <summary>
-    /// Crea una conexión nueva a SQL Server.
+    /// Crea una conexión nueva a MySQL.
     /// </summary>
-    public SqlConnection ObtenerConexion()
+    public MySqlConnection ObtenerConexion()
     {
-        return new SqlConnection(_cadenaConexion);
+        return new MySqlConnection(_cadenaConexion);
     }
 }
