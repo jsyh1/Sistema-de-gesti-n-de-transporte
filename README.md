@@ -124,6 +124,27 @@ La API ofrece operaciones CRUD para los modelos `Roles`, `Usuarios`, `Buses`,
 `/api/Programaciones` y `/api/ProgramacionesActivasBusDia`. El modelo de
 programación activa usa `BusId` y `DiaSemana` como clave compuesta.
 
+### Configuración JWT
+
+La API utiliza una clave secreta para firmar y validar los tokens JWT. Esta clave no debe almacenarse en el repositorio.
+
+Desde la carpeta `SistemaTransporte.Api`, configura User Secrets:
+
+```powershell
+dotnet user-secrets init
+dotnet user-secrets set "Jwt:Key" "REEMPLAZAR_POR_UNA_CLAVE_ALEATORIA_DE_AL_MENOS_32_BYTES"
+```
+
+Si el proyecto ya tiene configurado `UserSecretsId`, no es necesario ejecutar nuevamente `dotnet user-secrets init`.
+
+Cada desarrollador debe utilizar su propia clave local. No compartas claves JWT ni las subas a GitHub.
+
+Una vez configurada la clave y la conexión a MySQL, ejecuta la API:
+
+```powershell
+dotnet run
+```
+
 ## Pruebas previstas
 
 El plan de pruebas propone cubrir:
