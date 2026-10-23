@@ -7,4 +7,5 @@ namespace SistemaTransporte.Api.DAO;
 /// </summary>
 public interface IUsuarioDao : IDAO<Usuario>
 {
+    Task<Usuario?> GetByUsernameWithPasswordAsync(string nombreUsuario);
 }

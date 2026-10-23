@@ -1,11 +1,16 @@
 using System.Net;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using System.Security.Claims;
+using System.Text.Encodings.Web;
 using SistemaTransporte.Api.Controllers;
 using SistemaTransporte.Api.DAO;
 using SistemaTransporte.Api.DTOs;
@@ -273,6 +278,13 @@ public class CrudControllersTests
                 .UseTestServer()
                 .ConfigureServices(services =>
                 {
+                    services.AddAuthentication(options =>
+                    {
+                        options.DefaultAuthenticateScheme = TestAuthenticationHandler.SchemeName;
+                        options.DefaultChallengeScheme = TestAuthenticationHandler.SchemeName;
+                    }).AddScheme<AuthenticationSchemeOptions, TestAuthenticationHandler>(
+                        TestAuthenticationHandler.SchemeName, _ => { });
+                    services.AddAuthorization();
                     services.AddControllers()
                         .AddApplicationPart(typeof(BusesController).Assembly);
                     services.AddSingleton(busDao);
@@ -292,6 +304,8 @@ public class CrudControllersTests
                 .Configure(app =>
                 {
                     app.UseRouting();
+                    app.UseAuthentication();
+                    app.UseAuthorization();
                     app.UseEndpoints(endpoints => endpoints.MapControllers());
                 }))
             .Build();
@@ -367,6 +381,10 @@ public class CrudControllersTests
     {
         public MemoryUsuarioDao()
             : base(usuario => usuario.Id, (usuario, id) => usuario.Id = id) { }
+
+        public async Task<Usuario?> GetByUsernameWithPasswordAsync(string nombreUsuario) =>
+            (await GetAllAsync()).SingleOrDefault(
+                usuario => usuario.NombreUsuario == nombreUsuario);
     }
 
     private sealed class MemoryProgramacionDao : MemoryDao<Programacion>, IProgramacionDao
@@ -407,5 +425,31 @@ public class CrudControllersTests
 
         public Task<bool> DeleteAsync(int busId, DiaSemana diaSemana) =>
             Task.FromResult(_items.Remove((busId, diaSemana)));
+    }
+
+    private sealed class TestAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
+    {
+        public const string SchemeName = "Test";
+
+        public TestAuthenticationHandler(
+            IOptionsMonitor<AuthenticationSchemeOptions> options,
+            ILoggerFactory logger,
+            UrlEncoder encoder)
+            : base(options, logger, encoder)
+        {
+        }
+
+        protected override Task<AuthenticateResult> HandleAuthenticateAsync()
+        {
+            var identity = new ClaimsIdentity(
+                [
+                    new Claim(ClaimTypes.NameIdentifier, "1"),
+                    new Claim(ClaimTypes.Role, AutenticacionService.Administrador)
+                ],
+                Scheme.Name);
+            var principal = new ClaimsPrincipal(identity);
+            var ticket = new AuthenticationTicket(principal, Scheme.Name);
+            return Task.FromResult(AuthenticateResult.Success(ticket));
+        }
     }
 }

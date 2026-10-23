@@ -89,6 +89,38 @@ public class UsuarioDao : IUsuarioDao
         return null;
     }
 
+    public async Task<Usuario?> GetByUsernameWithPasswordAsync(string nombreUsuario)
+    {
+        using MySqlConnection conexion = _conexionDB.ObtenerConexion();
+
+        const string sql = """
+            SELECT Id, NombreUsuario, PasswordHash, Activo, RolId
+            FROM Usuarios
+            WHERE NombreUsuario = @NombreUsuario
+            LIMIT 1;
+            """;
+
+        using var comando = new MySqlCommand(sql, conexion);
+        comando.Parameters.AddWithValue("@NombreUsuario", nombreUsuario);
+
+        await conexion.OpenAsync();
+        using var reader = await comando.ExecuteReaderAsync();
+
+        if (!await reader.ReadAsync())
+        {
+            return null;
+        }
+
+        return new Usuario
+        {
+            Id = reader.GetInt32(0),
+            NombreUsuario = reader.GetString(1),
+            PasswordHash = reader.GetString(2),
+            Activo = reader.GetBoolean(3),
+            RolId = reader.GetInt32(4)
+        };
+    }
+
     /// <summary>
     /// Crea un usuario y devuelve el registro insertado.
     /// PasswordHash debe contener un hash seguro, nunca la contraseña original.

@@ -24,6 +24,24 @@ public class ProgramacionService
     public Task<IEnumerable<Programacion>> GetAllAsync() =>
         _programacionDao.GetAllAsync();
 
+    public async Task<IEnumerable<Programacion>> GetForUserAsync(int userId)
+    {
+        if (userId <= 0)
+        {
+            throw new ArgumentException("El identificador del usuario no es válido.", nameof(userId));
+        }
+
+        var conductor = (await _conductorDao.GetAllAsync())
+            .SingleOrDefault(item => item.UsuarioId == userId);
+        if (conductor is null)
+        {
+            return [];
+        }
+
+        return (await _programacionDao.GetAllAsync())
+            .Where(item => item.ConductorId == conductor.Id && item.Activa);
+    }
+
     public async Task<Programacion?> GetByIdAsync(int id)
     {
         ValidarId(id);

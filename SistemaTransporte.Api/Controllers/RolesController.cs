@@ -1,5 +1,6 @@
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using SistemaTransporte.Api.DTOs;
 using SistemaTransporte.Api.Services;
 
@@ -9,6 +10,7 @@ namespace SistemaTransporte.Api.Controllers;
 /// Gestiona las operaciones HTTP relacionadas con los roles.
 /// </summary>
 [ApiController]
+[Authorize(Roles = AutenticacionService.Administrador)]
 [Route("api/[controller]")]
 public class RolesController : ControllerBase
 {
