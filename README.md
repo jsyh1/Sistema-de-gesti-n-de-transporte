@@ -80,6 +80,10 @@ La API recibe y devuelve los enums como valores numéricos JSON. En MySQL, los e
 | `EstadoConductor` | 3 | Inactivo |
 | `DiaSemana` | 1–7 | Lunes–Domingo, en ese orden |
 
+##Credenciales 
+> Administrador
+> 12345678
+
 Para crear una base nueva usa [`database/schema.sql`](./database/schema.sql). Si la base existente aún almacena estados o días como números, haz una copia de seguridad, revisa los resultados de las consultas preliminares y ejecuta una sola vez las migraciones [`database/migrations/20261022_estados_a_texto.sql`](./database/migrations/20261022_estados_a_texto.sql) y [`database/migrations/20261022_dias_semana_a_texto.sql`](./database/migrations/20261022_dias_semana_a_texto.sql). Detén la API durante la migración y vuelve a iniciarla cuando termine; las migraciones conservan las filas y convierten los códigos en nombres de enum.
 
 ## Requisitos previos
