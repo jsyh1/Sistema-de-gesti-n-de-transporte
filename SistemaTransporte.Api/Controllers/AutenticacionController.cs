@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using SistemaTransporte.Api.DTOs.Login;
 using SistemaTransporte.Api.Services;
 
@@ -16,6 +17,7 @@ public sealed class AutenticacionController : ControllerBase
     }
 
     [HttpPost("login")]
+    [EnableRateLimiting("login")]
     public async Task<IActionResult> IniciarSesion([FromBody] IniciarSesionDto solicitud)
     {
         var (sesion, errorStatus) =

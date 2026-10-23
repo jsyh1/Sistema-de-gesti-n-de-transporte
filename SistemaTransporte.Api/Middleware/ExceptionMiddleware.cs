@@ -1,4 +1,5 @@
 using System.Text.Json;
+using MySqlConnector;
 
 namespace SistemaTransporte.Api.Middleware;
 
@@ -29,6 +30,24 @@ public class ExceptionMiddleware
         try
         {
             await _next(context);
+        }
+        catch (MySqlException ex) when (ex.Number == 1062)
+        {
+            if (context.Response.HasStarted)
+                throw;
+
+            _logger.LogWarning(
+                "Se rechazó una operación por un dato duplicado en MySQL (código {ErrorNumber}).",
+                ex.Number);
+
+            context.Response.Clear();
+            context.Response.StatusCode = StatusCodes.Status409Conflict;
+            context.Response.ContentType = "application/json";
+
+            await context.Response.WriteAsync(JsonSerializer.Serialize(new
+            {
+                mensaje = "Ya existe un registro con esos datos."
+            }));
         }
         catch (Exception ex)
         {
