@@ -1,10 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using SistemaTransporte.Api.DTOs.Programacion;
 using SistemaTransporte.Api.Services;
+using System.Security.Claims;
 
 namespace SistemaTransporte.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 public class ProgramacionesController : ControllerBase
 {
@@ -16,10 +19,25 @@ public class ProgramacionesController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Roles = AutenticacionService.Administrador)]
     public async Task<IActionResult> ObtenerTodas() =>
         Ok(await _programacionService.GetAllAsync());
 
+    [HttpGet("mias")]
+    [Authorize(Roles = AutenticacionService.Conductor)]
+    public async Task<IActionResult> ObtenerMisProgramaciones()
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!int.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        return Ok(await _programacionService.GetForUserAsync(userId));
+    }
+
     [HttpGet("{id:int}")]
+    [Authorize(Roles = AutenticacionService.Administrador)]
     public async Task<IActionResult> ObtenerPorId(int id)
     {
         try
@@ -34,6 +52,7 @@ public class ProgramacionesController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = AutenticacionService.Administrador)]
     public async Task<IActionResult> Crear([FromBody] CrearProgramacionDto dto)
     {
         try
@@ -49,6 +68,7 @@ public class ProgramacionesController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
+    [Authorize(Roles = AutenticacionService.Administrador)]
     public async Task<IActionResult> Actualizar(
         int id, [FromBody] ActualizarProgramacionDto dto)
     {
@@ -64,6 +84,7 @@ public class ProgramacionesController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = AutenticacionService.Administrador)]
     public async Task<IActionResult> Eliminar(int id)
     {
         try

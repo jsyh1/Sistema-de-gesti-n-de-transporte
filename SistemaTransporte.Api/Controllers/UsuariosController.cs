@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using SistemaTransporte.Api.DTOs;
 using SistemaTransporte.Api.DTOs.Login;
 using SistemaTransporte.Api.Services;
@@ -9,6 +10,7 @@ namespace SistemaTransporte.Api.Controllers;
 /// Gestiona las peticiones HTTP relacionadas con los usuarios.
 /// </summary>
 [ApiController]
+[Authorize(Roles = AutenticacionService.Administrador)]
 [Route("api/[controller]")]
 public class UsuariosController : ControllerBase
 {

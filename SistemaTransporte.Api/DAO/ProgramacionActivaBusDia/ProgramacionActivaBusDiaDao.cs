@@ -86,7 +86,7 @@ public class ProgramacionActivaBusDiaDao : IProgramacionActivaBusDiaDao
         comando.Parameters.AddWithValue("@NuevoBusId", entity.BusId);
         comando.Parameters.AddWithValue("@NuevoDiaSemana", entity.DiaSemana.ToString());
         comando.Parameters.AddWithValue("@BusId", busId);
-        comando.Parameters.AddWithValue("@DiaSemana", diaSemana);
+        comando.Parameters.AddWithValue("@DiaSemana", diaSemana.ToString());
         await comando.ExecuteNonQueryAsync();
         using var consulta = CrearConsulta(conexion, entity.BusId, entity.DiaSemana);
         using var reader = await consulta.ExecuteReaderAsync();

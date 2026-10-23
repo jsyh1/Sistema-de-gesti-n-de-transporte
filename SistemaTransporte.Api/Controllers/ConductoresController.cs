@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using SistemaTransporte.Api.DTOs.Conductor;
 using SistemaTransporte.Api.Services;
 
 namespace SistemaTransporte.Api.Controllers;
 
 [ApiController]
+[Authorize(Roles = AutenticacionService.Administrador)]
 [Route("api/[controller]")]
 public class ConductoresController : ControllerBase
 {
