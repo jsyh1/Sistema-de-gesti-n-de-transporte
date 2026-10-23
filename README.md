@@ -80,7 +80,7 @@ La API recibe y devuelve los enums como valores numéricos JSON. En MySQL, los e
 | `EstadoConductor` | 3 | Inactivo |
 | `DiaSemana` | 1–7 | Lunes–Domingo, en ese orden |
 
-Para crear una base nueva usa [`database/schema.sql`](./database/schema.sql). Si la base existente aún almacena estados o días como números, haz una copia de seguridad, revisa los resultados de las consultas preliminares y ejecuta una sola vez las migraciones [`database/migrations/20261022_estados_a_texto.sql`](./database/migrations/20261022_estados_a_texto.sql) y [`database/migrations/20261022_dias_semana_a_texto.sql`](./database/migrations/20261022_dias_semana_a_texto.sql). Detén la API durante la migración y vuelve a iniciarla cuando termine; las migraciones conservan las filas y convierten los códigos en nombres de enum.
+La estructura de la base de datos y los scripts SQL se encuentran documentados en la [wiki del proyecto](https://github.com/jsyh1/Sistema-de-gesti-n-de-transporte/wiki). Antes de crear o modificar la base de datos, consulta allí el script correspondiente y verifica que coincida con la versión actual del proyecto.
 
 ## Requisitos previos
 
@@ -120,6 +120,34 @@ La API ofrece operaciones CRUD para los modelos `Roles`, `Usuarios`, `Buses`,
 `/api/Roles`, `/api/Usuarios`, `/api/Buses`, `/api/Conductores`,
 `/api/Programaciones` y `/api/ProgramacionesActivasBusDia`. El modelo de
 programación activa usa `BusId` y `DiaSemana` como clave compuesta.
+
+## Acceso inicial del frontend
+
+No se publican credenciales de administrador en el repositorio. Si tu base de datos ya contiene la cuenta de demostración anterior, inicia sesión solo en un entorno local, crea una cuenta de administrador con una contraseña nueva desde la sección Usuarios y desactiva o elimina la cuenta de demostración. No uses esa cuenta en producción.
+
+La API requiere una cuenta MySQL propia con permisos limitados sobre la base `ProgramacionBuses`; no uses el usuario `root`.
+
+
+### Configuración JWT
+
+La API utiliza una clave secreta para firmar y validar los tokens JWT. Esta clave no debe almacenarse en el repositorio.
+
+Desde la carpeta `SistemaTransporte.Api`, configura User Secrets:
+
+```powershell
+dotnet user-secrets init
+dotnet user-secrets set "Jwt:Key" "REEMPLAZAR_POR_UNA_CLAVE_ALEATORIA_DE_AL_MENOS_32_BYTES"
+```
+
+Si el proyecto ya tiene configurado `UserSecretsId`, no es necesario ejecutar nuevamente `dotnet user-secrets init`.
+
+Cada desarrollador debe utilizar su propia clave local. No compartas claves JWT ni las subas a GitHub.
+
+Una vez configurada la clave y la conexión a MySQL, ejecuta la API:
+
+```powershell
+dotnet run
+```
 
 ## Pruebas previstas
 

@@ -1,10 +1,15 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Security.Claims;
+using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using SistemaTransporte.Api.Controllers;
 using SistemaTransporte.Api.DAO;
 using SistemaTransporte.Api.Models;
@@ -163,6 +168,15 @@ public class RolesControllerTests
                 .ConfigureServices(services =>
                 {
                     services
+                        .AddAuthentication(options =>
+                        {
+                            options.DefaultAuthenticateScheme = TestAuthenticationHandler.SchemeName;
+                            options.DefaultChallengeScheme = TestAuthenticationHandler.SchemeName;
+                        })
+                        .AddScheme<AuthenticationSchemeOptions, TestAuthenticationHandler>(
+                            TestAuthenticationHandler.SchemeName, _ => { });
+                    services.AddAuthorization();
+                    services
                         .AddControllers()
                         .AddApplicationPart(typeof(RolesController).Assembly);
                     services.AddSingleton<IRolDao>(dao);
@@ -171,12 +185,38 @@ public class RolesControllerTests
                 .Configure(app =>
                 {
                     app.UseRouting();
+                    app.UseAuthentication();
+                    app.UseAuthorization();
                     app.UseEndpoints(endpoints => endpoints.MapControllers());
                 }))
             .Build();
 
         await host.StartAsync();
         return host;
+    }
+
+    private sealed class TestAuthenticationHandler
+        : AuthenticationHandler<AuthenticationSchemeOptions>
+    {
+        public const string SchemeName = "Test";
+
+        public TestAuthenticationHandler(
+            IOptionsMonitor<AuthenticationSchemeOptions> options,
+            ILoggerFactory logger,
+            UrlEncoder encoder)
+            : base(options, logger, encoder)
+        {
+        }
+
+        protected override Task<AuthenticateResult> HandleAuthenticateAsync()
+        {
+            var identity = new ClaimsIdentity(
+                [new Claim(ClaimTypes.Role, "Administrador")],
+                Scheme.Name);
+            var principal = new ClaimsPrincipal(identity);
+            var ticket = new AuthenticationTicket(principal, Scheme.Name);
+            return Task.FromResult(AuthenticateResult.Success(ticket));
+        }
     }
 
     private sealed class FakeRolDao : IRolDao
