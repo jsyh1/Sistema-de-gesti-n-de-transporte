@@ -223,6 +223,94 @@ public class CrudControllersTests
     }
 
     [Fact]
+    public async Task Programaciones_Devuelve409CuandoHayConflictosDeBusODelConductor()
+    {
+        var busDao = new MemoryBusDao();
+        var conductorDao = new MemoryConductorDao();
+        var primerBus = await busDao.CreateAsync(new Bus
+        {
+            NumeroIdentificacion = "BUS-1",
+            Modelo = "Modelo",
+            Capacidad = 30
+        });
+        var segundoBus = await busDao.CreateAsync(new Bus
+        {
+            NumeroIdentificacion = "BUS-2",
+            Modelo = "Modelo",
+            Capacidad = 30
+        });
+        var tercerBus = await busDao.CreateAsync(new Bus
+        {
+            NumeroIdentificacion = "BUS-3",
+            Modelo = "Modelo",
+            Capacidad = 30
+        });
+        var primerConductor = await conductorDao.CreateAsync(new Conductor
+        {
+            Nombre = "Conductor 1",
+            NumeroLicencia = "LIC-1"
+        });
+        var segundoConductor = await conductorDao.CreateAsync(new Conductor
+        {
+            Nombre = "Conductor 2",
+            NumeroLicencia = "LIC-2"
+        });
+
+        using var host = await CrearAplicacionAsync(
+            busDao,
+            conductorDao,
+            new MemoryRolDao(),
+            new MemoryUsuarioDao(),
+            new MemoryProgramacionDao(),
+            new MemoryProgramacionActivaDao());
+        using var client = host.GetTestClient();
+
+        var primera = await client.PostAsJsonAsync("/api/Programaciones",
+            CrearHorario(primerBus.Id, primerConductor.Id, 8, 12));
+        Assert.Equal(HttpStatusCode.Created, primera.StatusCode);
+
+        var busOcupado = await client.PostAsJsonAsync("/api/Programaciones",
+            CrearHorario(primerBus.Id, segundoConductor.Id, 13, 15));
+        Assert.Equal(HttpStatusCode.Conflict, busOcupado.StatusCode);
+        Assert.Contains("programación activa", await busOcupado.Content.ReadAsStringAsync());
+
+        var conductorOcupado = await client.PostAsJsonAsync("/api/Programaciones",
+            CrearHorario(segundoBus.Id, primerConductor.Id, 11, 13));
+        Assert.Equal(HttpStatusCode.Conflict, conductorOcupado.StatusCode);
+        Assert.Contains("se solapa", await conductorOcupado.Content.ReadAsStringAsync());
+
+        var tercera = await client.PostAsJsonAsync("/api/Programaciones",
+            CrearHorario(tercerBus.Id, segundoConductor.Id, 8, 10));
+        Assert.Equal(HttpStatusCode.Created, tercera.StatusCode);
+        var terceraProgramacion = await tercera.Content.ReadFromJsonAsync<Programacion>();
+        Assert.NotNull(terceraProgramacion);
+
+        var actualizacionConflictiva = await client.PutAsJsonAsync(
+            $"/api/Programaciones/{terceraProgramacion.Id}",
+            new ActualizarProgramacionDto
+            {
+                BusId = primerBus.Id,
+                ConductorId = segundoConductor.Id,
+                DiaSemana = DiaSemana.Lunes,
+                HoraEntrada = new TimeSpan(8, 0, 0),
+                HoraSalida = new TimeSpan(10, 0, 0),
+                Activa = true
+            });
+        Assert.Equal(HttpStatusCode.Conflict, actualizacionConflictiva.StatusCode);
+    }
+
+    private static CrearProgramacionDto CrearHorario(
+        int busId, int conductorId, int horaEntrada, int horaSalida) => new()
+    {
+        BusId = busId,
+        ConductorId = conductorId,
+        DiaSemana = DiaSemana.Lunes,
+        HoraEntrada = new TimeSpan(horaEntrada, 0, 0),
+        HoraSalida = new TimeSpan(horaSalida, 0, 0),
+        Activa = true
+    };
+
+    [Fact]
     public async Task Enums_RechazanValoresNoDefinidosEnSolicitudes()
     {
         using var host = await CrearAplicacionAsync(
