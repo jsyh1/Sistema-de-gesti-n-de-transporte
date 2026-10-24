@@ -5,6 +5,10 @@ using SistemaTransporte.Api.Models.Enums;
 
 namespace SistemaTransporte.Api.Services;
 
+public sealed class ConflictoProgramacionException(string message) : Exception(message)
+{
+}
+
 public class ProgramacionService
 {
     private readonly IProgramacionDao _programacionDao;
@@ -52,7 +56,8 @@ public class ProgramacionService
     {
         ArgumentNullException.ThrowIfNull(dto);
         await ValidarDatosAsync(
-            dto.BusId, dto.ConductorId, dto.DiaSemana, dto.HoraEntrada, dto.HoraSalida);
+            dto.BusId, dto.ConductorId, dto.DiaSemana, dto.HoraEntrada,
+            dto.HoraSalida, dto.Activa);
 
         return await _programacionDao.CreateAsync(new Programacion
         {
@@ -72,7 +77,8 @@ public class ProgramacionService
         ValidarId(id);
         ArgumentNullException.ThrowIfNull(dto);
         await ValidarDatosAsync(
-            dto.BusId, dto.ConductorId, dto.DiaSemana, dto.HoraEntrada, dto.HoraSalida);
+            dto.BusId, dto.ConductorId, dto.DiaSemana, dto.HoraEntrada,
+            dto.HoraSalida, dto.Activa, id);
 
         return await _programacionDao.UpdateAsync(id, new Programacion
         {
@@ -94,7 +100,8 @@ public class ProgramacionService
 
     private async Task ValidarDatosAsync(
         int busId, int conductorId, DiaSemana diaSemana,
-        TimeSpan horaEntrada, TimeSpan horaSalida)
+        TimeSpan horaEntrada, TimeSpan horaSalida, bool activa,
+        int? programacionIdExcluida = null)
     {
         if (busId <= 0 || await _busDao.GetByIdAsync(busId) is null)
         {
@@ -117,6 +124,32 @@ public class ProgramacionService
         {
             throw new ArgumentException(
                 "La hora de salida debe ser posterior a la hora de entrada y ambas deben pertenecer al mismo día.");
+        }
+
+        if (!activa)
+        {
+            return;
+        }
+
+        var programacionesActivas = (await _programacionDao.GetAllAsync())
+            .Where(item => item.Activa &&
+                item.Id != programacionIdExcluida &&
+                item.DiaSemana == diaSemana)
+            .ToArray();
+
+        if (programacionesActivas.Any(item => item.BusId == busId))
+        {
+            throw new ConflictoProgramacionException(
+                "El bus ya tiene una programación activa para ese día.");
+        }
+
+        if (programacionesActivas.Any(item =>
+            item.ConductorId == conductorId &&
+            horaEntrada < item.HoraSalida &&
+            horaSalida > item.HoraEntrada))
+        {
+            throw new ConflictoProgramacionException(
+                "El conductor ya tiene una programación activa que se solapa con ese horario.");
         }
     }
 

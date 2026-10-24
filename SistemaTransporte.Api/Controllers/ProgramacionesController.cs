@@ -61,6 +61,10 @@ public class ProgramacionesController : ControllerBase
             return CreatedAtAction(
                 nameof(ObtenerPorId), new { id = programacion.Id }, programacion);
         }
+        catch (ConflictoProgramacionException ex)
+        {
+            return Conflict(new { mensaje = ex.Message });
+        }
         catch (ArgumentException ex)
         {
             return BadRequest(new { mensaje = ex.Message });
@@ -76,6 +80,10 @@ public class ProgramacionesController : ControllerBase
         {
             var programacion = await _programacionService.UpdateAsync(id, dto);
             return programacion is null ? NotFound() : Ok(programacion);
+        }
+        catch (ConflictoProgramacionException ex)
+        {
+            return Conflict(new { mensaje = ex.Message });
         }
         catch (ArgumentException ex)
         {
